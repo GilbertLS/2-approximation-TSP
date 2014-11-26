@@ -1,0 +1,151 @@
+<html>
+	<head>
+		<title>Travelling Salesman 2-Approximation</title>
+	</head>
+	<script src="jquery-2.1.1.min.js"></script>
+	<script src="graph.js"></script>
+	<script src="mst.js"></script>
+	<script src="walk.js"></script>
+	<script src="utilities.js"></script>
+	<script>
+		var graph 	= null,
+			mst 	= null,
+			walk 	= null,
+			ctx		= null,
+			cancel 	= false;
+
+		$(document).ready(function() {
+			ctx = $("#canvas")[0].getContext("2d");
+			disableButtons();
+			$("#new-button").attr("disabled", false);
+
+			//Create new graph then run MST and Walk
+			$("#new-button").click(function(){
+				var numNodes 	= $("#nodes-input").val();
+
+				graph 	= new Graph(ctx, numNodes);
+
+				doAlgorithm();
+			});
+
+			//Run the algorithm using the same graph
+			$("#again-button").click(function(){
+				graph.again();
+				doAlgorithm();
+			});
+
+			function doAlgorithm() {
+				var time = $("#time-input").val();
+
+				mst  = null;
+				walk = null;
+				cancel = false;
+
+				disableButtons();
+				$("#cancel-button").attr("disabled", false);
+
+				mst 			= new MST(graph, time);
+				var waitForMST 	= setInterval(function(){
+					if(mst && mst.done && !cancel) {
+						clearInterval(waitForMST);
+						walk = new Walk(graph, time);
+					}
+				}, 1000);
+			}
+
+			$("#walk-button").click(function() {
+				if(graph) {
+					graph.clear();
+					graph.drawWalkEdges("#FF0000");
+					graph.drawNodes();
+				}
+			});
+
+			$("#mst-button").click(function() {
+				if(graph) {
+					graph.clear();
+					graph.drawEdges();
+					graph.drawNodes();
+				}
+			});
+
+			$("#both-button").click(function() {
+				if(graph)
+					graph.draw();
+			});
+
+			$("#cancel-button").click(function() {
+				cancel = true;
+				if(mst)
+					mst.done = true;
+				if(walk)
+					walk.done = true;
+				enableButtons();
+			});
+
+			setInterval(function() {
+				if(walk && walk.done) {
+					enableButtons();
+				}
+			}, 100);
+
+			function disableButtons() {
+				$("#new-button").attr("disabled", true);
+				$("#both-button").attr("disabled", true);
+				$("#mst-button").attr("disabled", true);
+				$("#walk-button").attr("disabled", true);
+				$("#again-button").attr("disabled", true);
+				$("#cancel-button").attr("disabled", true);
+			}
+
+			function enableButtons() {
+				$("#new-button").attr("disabled", false);
+				$("#both-button").attr("disabled", false);
+				$("#mst-button").attr("disabled", false);
+				$("#walk-button").attr("disabled", false);
+				$("#again-button").attr("disabled", false);
+				$("#cancel-button").attr("disabled", false);
+			}
+		});
+
+		function main() {
+			graph = new Graph(ctx, 100);
+			//graph.testNodes1();
+			mst = new MST(graph);
+			var waitForMST = setInterval(function(){
+				if(mst && mst.done) {
+					clearInterval(waitForMST);
+					walk = new Walk(graph, time);
+				}
+			}, 100);
+		}
+		
+		console.log("No syntax errors!");
+	</script>
+	<body style="background-color:#666; padding: 0px; margin: 0px;">
+		<div style="float: left; padding: 10px; background-color: #999; margin: 10px;">
+			<div style="float: left;">
+				Amount of nodes:<br/>
+				Time between steps:<br/>
+			</div>
+			<div style="float:left; margin-left: 5px;">
+				<input id="nodes-input" type="text" value="5">(recommend < 10000)<br/>
+				<input id="time-input" type="text" value="500">milliseconds<br/>
+			</div>
+			<br/>
+			<br/>
+			<button id="new-button">New</button>
+			<button id="again-button" disabled>Run Again</button>
+			<button id="cancel-button">Cancel</button>
+			<br/>
+			<button id="walk-button" disabled>Show only walk path</button>
+			<button id="mst-button" disabled>Show only MST path</button>
+			<button id="both-button" disabled>Show both</button>
+		</div>
+		<div style="float: left; margin: 10px;">
+			<canvas style="background-color: #FFF;" id="canvas" width="500px" height="500px">
+				<h1>You need a browser that supports the HTML5 canvas element to view this.</h1>
+			</canvas>
+		</div>
+	</body>
+</html>

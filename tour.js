@@ -1,4 +1,4 @@
-function Walk(graph, time) {
+function Tour(graph, time) {
 	this.graph 			= graph;
 	this.visitedNodes 	= null;
 	this.currentNode 	= null;
@@ -6,20 +6,20 @@ function Walk(graph, time) {
 	this.done 			= false;
 	this.time 			= time || 100;
 
-	//Run walk
+	//Run tour
 	this.init();
 	this.graph.draw();
 	this.graph.drawNode(this.currentNode, "#00FF00", 5);
-	this.walk();
+	this.tour();
 }
 
-Walk.prototype.init = function() {
+Tour.prototype.init = function() {
 	this.visitedNodes 	= [];
 	this.currentNode 	= this.graph.getRoot();
 	this.first 			= this.currentNode;
 	this.done 			= false;
 
-	//Populate node's children array to make walk easier
+	//Populate node's children array to make tour easier
 	this.graph.populateChildrenFromParents();
 
 	//Calculate angle between parent and child
@@ -34,13 +34,13 @@ Walk.prototype.init = function() {
 	}
 }
 
-Walk.prototype.walk = function() {
+Tour.prototype.tour = function() {
 	var that = this;
 
 	//Interval used to slow down algorithm to make rendering slower
 	this.interval = setInterval(function() {
 		if(!that.done) {
-			that.walkInside();
+			that.tourInside();
 		} else {
 			clearInterval(that.interval);
 			that.interval = null;
@@ -48,7 +48,7 @@ Walk.prototype.walk = function() {
 	}, this.time);
 }
 
-Walk.prototype.walkInside = function() {
+Tour.prototype.tourInside = function() {
 		if(this.visitedNodes.indexOf(this.currentNode) < 0)
 				this.visitedNodes.push(this.currentNode);
 
@@ -56,13 +56,13 @@ Walk.prototype.walkInside = function() {
 			var node = getNodeWithSmallestAngle(this.currentNode.children);
 			removeFromArray(this.currentNode.children, node);
 			this.currentNode = node;
-			this.currentNode.walkParent = this.visitedNodes[this.visitedNodes.length-1];
+			this.currentNode.tourParent = this.visitedNodes[this.visitedNodes.length-1];
 		} else {
 			this.currentNode = this.currentNode.parent;
 		}
 
 		if(this.visitedNodes.length == this.graph.nodes.length || this.currentNode == null) {
-			this.first.walkParent = this.visitedNodes[this.visitedNodes.length-1];
+			this.first.tourParent = this.visitedNodes[this.visitedNodes.length-1];
 			this.done = true;
 			this.graph.draw();
 			return;
@@ -70,20 +70,4 @@ Walk.prototype.walkInside = function() {
 
 		this.graph.draw();
 		this.graph.drawNode(this.currentNode, "#00FF00", 5);
-}
-
-function getNodeWithSmallestAngle(nodes) {
-	if(nodes.length < 1)
-		return null;
-	if(nodes.length == 1)
-		return nodes[0];
-
-	var minNode = nodes[0];
-	for(var i = 1; i < nodes.length; i++) {
-		var node = nodes[i];
-		if(node.angle < minNode.angle)
-			minNode = node;
-	}
-
-	return minNode;
 }

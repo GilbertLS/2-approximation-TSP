@@ -18,8 +18,6 @@ MST.prototype.prim = function() {
 			clearInterval(that.interval);
 			that.interval = null;
 		}
-
-		console.log("hello");
 	}, this.time);
 }
 

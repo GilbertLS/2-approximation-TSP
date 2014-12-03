@@ -32,19 +32,24 @@ Graph.prototype.clear = function() {
 Graph.prototype.draw = function() {
 	this.clear();
 	this.drawEdges();
-	this.drawWalkEdges("#FF0000", 2);
+	this.drawTourEdges("#FF0000", 2);
+	this.drawNodes();
+}
+
+Graph.prototype.drawFullGraph = function() {
+	this.clear();
+	for(var i = 0; i < this.nodes.length; i++) {
+		for(var j = i + 1; j < this.nodes.length; j++) {
+			this.drawEdge(this.nodes[i], this.nodes[j]);
+		}
+	}
 	this.drawNodes();
 }
 
 Graph.prototype.drawNodes = function(color) {
-	color = color || "#000";
-	var ctx = this.ctx;
 	for(var i = 0; i < this.nodes.length; ++i) {
 		var node = this.nodes[i];
-		ctx.fillStyle = color;
-		ctx.beginPath();
-		ctx.arc(node.x, node.y, 2, 0, 2 * Math.PI, false);
-		ctx.fill();
+		this.drawNode(node, color);
 	}
 }
 
@@ -57,42 +62,42 @@ Graph.prototype.drawNode = function(node, color, size) {
 	var ctx = this.ctx;
 	ctx.fillStyle = color;
 	ctx.beginPath();
-	ctx.arc(node.x,node.y, size, 0, size * Math.PI, false);
+	ctx.arc(node.x, node.y, size, 0, size * Math.PI, false);
 	ctx.fill();
 }
 
+Graph.prototype.drawEdge = function(node1, node2, color, thickness) {
+	color = color || "#000";
+	thickness = thickness || 1;
+	var ctx = this. ctx;
+
+	if(!node1 || !node2)
+		return;
+
+	ctx.strokeStyle = color;
+	ctx.lineWidth = thickness;
+	ctx.beginPath();
+	ctx.moveTo(node1.x, node1.y);
+	ctx.lineTo(node2.x, node2.y);
+	ctx.stroke();
+}
+
 Graph.prototype.drawEdges = function(color, thickness) {
-	color 		= color || "#000";
-	thickness 	= thickness || 1;
-	var ctx 	= this.ctx;
 	for(var i = 0; i < this.nodes.length; ++i) {
 		var node = this.nodes[i];
 		var parent = node.parent;
 		if(parent) {
-			ctx.strokeStyle = color;
-			ctx.lineWidth = thickness;
-			ctx.beginPath();
-			ctx.moveTo(node.x, node.y);
-			ctx.lineTo(parent.x, parent.y);
-			ctx.stroke();
+			this.drawEdge(node, parent, color, thickness);
 		}
 	}
 }
 
-Graph.prototype.drawWalkEdges = function(color, thickness) {
-	color 		= color || "#000";
-	thickness 	= thickness || 1;
-	var ctx 	= this.ctx;
+Graph.prototype.drawTourEdges = function(color, thickness) {
 	for(var i = 0; i < this.nodes.length; ++i) {
 		var node = this.nodes[i];
-		var parent = node.walkParent;
+		var parent = node.tourParent;
 		if(parent) {
-			ctx.strokeStyle = color;
-			ctx.lineWidth = thickness;
-			ctx.beginPath();
-			ctx.moveTo(node.x, node.y);
-			ctx.lineTo(parent.x, parent.y);
-			ctx.stroke();
+			this.drawEdge(node, parent, color, thickness);
 		}
 	}
 }
@@ -111,7 +116,7 @@ Graph.prototype.getEdgesLength = function() {
 	return 0;
 }
 
-//Populate nodes children list for future walk
+//Populate nodes children list for future tour
 Graph.prototype.populateChildrenFromParents = function() {
 	for(var i = 0; i < this.nodes.length; i++)
 		this.nodes[i].children = [];
@@ -132,7 +137,7 @@ Graph.prototype.again = function() {
 		node.parent = null;
 		node.children = [];
 		node.angle = 0;
-		node.walkParent = null;
+		node.tourParent = null;
 	}
 }
 
@@ -143,7 +148,7 @@ function Node(x, y) {
 	this.parent = null;
 	this.children = [];
 	this.angle = 0;
-	this.walkParent = null;
+	this.tourParent = null;
 }
 
 function getAngle(node1, node2) {

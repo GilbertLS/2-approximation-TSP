@@ -5,21 +5,22 @@
 	<script src="jquery-2.1.1.min.js"></script>
 	<script src="graph.js"></script>
 	<script src="mst.js"></script>
-	<script src="walk.js"></script>
+	<script src="tour.js"></script>
 	<script src="utilities.js"></script>
 	<script>
-		var graph 	= null,
-			mst 	= null,
-			walk 	= null,
-			ctx		= null,
-			cancel 	= false;
+		var graph 		= null,
+			mst 		= null,
+			tour 		= null,
+			ctx			= null,
+			waitForMST 	= null,
+			cancel 		= false;
 
 		$(document).ready(function() {
 			ctx = $("#canvas")[0].getContext("2d");
 			disableButtons();
 			$("#new-button").attr("disabled", false);
 
-			//Create new graph then run MST and Walk
+			//Create new graph then run MST and Tour
 			$("#new-button").click(function(){
 				var numNodes 	= $("#nodes-input").val();
 
@@ -38,25 +39,25 @@
 				var time = $("#time-input").val();
 
 				mst  = null;
-				walk = null;
+				tour = null;
 				cancel = false;
 
 				disableButtons();
 				$("#cancel-button").attr("disabled", false);
 
-				mst 			= new MST(graph, time);
-				var waitForMST 	= setInterval(function(){
+				mst 		= new MST(graph, time);
+				waitForMST 	= setInterval(function(){
 					if(mst && mst.done && !cancel) {
 						clearInterval(waitForMST);
-						walk = new Walk(graph, time);
+						tour = new Tour(graph, time);
 					}
 				}, 1000);
 			}
 
-			$("#walk-button").click(function() {
+			$("#tour-button").click(function() {
 				if(graph) {
 					graph.clear();
-					graph.drawWalkEdges("#FF0000");
+					graph.drawTourEdges("#FF0000");
 					graph.drawNodes();
 				}
 			});
@@ -78,13 +79,21 @@
 				cancel = true;
 				if(mst)
 					mst.done = true;
-				if(walk)
-					walk.done = true;
+				if(tour)
+					tour.done = true;
 				enableButtons();
+				clearInterval(waitForMST);
+				waitForMST = null;
+			});
+
+			$("#full-button").click(function() {
+				if(graph && (!mst || mst.done) && (!tour || tour.done)) {
+					graph.drawFullGraph();
+				}
 			});
 
 			setInterval(function() {
-				if(walk && walk.done) {
+				if(tour && tour.done) {
 					enableButtons();
 				}
 			}, 100);
@@ -93,32 +102,22 @@
 				$("#new-button").attr("disabled", true);
 				$("#both-button").attr("disabled", true);
 				$("#mst-button").attr("disabled", true);
-				$("#walk-button").attr("disabled", true);
+				$("#tour-button").attr("disabled", true);
 				$("#again-button").attr("disabled", true);
 				$("#cancel-button").attr("disabled", true);
+				$("#full-button").attr("disabled", true);
 			}
 
 			function enableButtons() {
 				$("#new-button").attr("disabled", false);
 				$("#both-button").attr("disabled", false);
 				$("#mst-button").attr("disabled", false);
-				$("#walk-button").attr("disabled", false);
+				$("#tour-button").attr("disabled", false);
 				$("#again-button").attr("disabled", false);
 				$("#cancel-button").attr("disabled", false);
+				$("#full-button").attr("disabled", false);
 			}
 		});
-
-		function main() {
-			graph = new Graph(ctx, 100);
-			//graph.testNodes1();
-			mst = new MST(graph);
-			var waitForMST = setInterval(function(){
-				if(mst && mst.done) {
-					clearInterval(waitForMST);
-					walk = new Walk(graph, time);
-				}
-			}, 100);
-		}
 		
 		console.log("No syntax errors!");
 	</script>
@@ -138,9 +137,10 @@
 			<button id="again-button" disabled>Run Again</button>
 			<button id="cancel-button">Cancel</button>
 			<br/>
-			<button id="walk-button" disabled>Show only walk path</button>
-			<button id="mst-button" disabled>Show only MST path</button>
+			<button id="tour-button" disabled>Show tour path</button>
+			<button id="mst-button" disabled>Show MST path</button>
 			<button id="both-button" disabled>Show both</button>
+			<button id="full-button" disabled>Show full graph</button>
 		</div>
 		<div style="float: left; margin: 10px;">
 			<canvas style="background-color: #FFF;" id="canvas" width="500px" height="500px">

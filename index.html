@@ -3,10 +3,10 @@
 		<title>Travelling Salesman 2-Approximation</title>
 	</head>
 	<script src="//code.jquery.com/jquery-1.2.1.min.js"></script>
+	<script src="utilities.js"></script>
 	<script src="graph.js"></script>
 	<script src="mst.js"></script>
 	<script src="tour.js"></script>
-	<script src="utilities.js"></script>
 	<script>
 		var graph 		= null,
 			mst 		= null,
@@ -22,9 +22,14 @@
 
 			//Create new graph then run MST and Tour
 			$("#new-button").click(function(){
-				var numNodes 	= $("#nodes-input").val();
+				var numNodes = parseInt($("#nodes-input").val());
 
-				graph 	= new Graph(ctx, numNodes);
+				if(isNaN(numNodes) || numNodes <= 1) {
+					alert("You need atleast 2 nodes to run the algorithm.");
+					return;
+				}
+
+				graph = new Graph(ctx, numNodes);
 
 				doAlgorithm();
 			});
@@ -36,11 +41,16 @@
 			});
 
 			function doAlgorithm() {
-				var time = $("#time-input").val();
+				var time = parseInt($("#time-input").val());
 
-				mst  = null;
-				tour = null;
-				cancel = false;
+				if(isNaN(time) || time < 1) {
+					alert("You need to set the time to be over 0ms to run the algorithm.");
+					return;
+				}
+
+				mst  	= null;
+				tour 	= null;
+				cancel 	= false;
 
 				disableButtons();
 				$("#cancel-button").attr("disabled", false);

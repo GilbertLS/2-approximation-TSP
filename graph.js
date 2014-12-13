@@ -13,17 +13,6 @@ Graph.prototype.createNodes = function(amount) {
 	}
 }
 
-Graph.prototype.testNodes1 = function() {
-	this.nodes.push(new Node(100,100));		//a
-	this.nodes.push(new Node(100,200));		//b
-	this.nodes.push(new Node(50,250));		//c
-	this.nodes.push(new Node(200,100));		//d
-	this.nodes.push(new Node(250,150));		//e
-	this.nodes.push(new Node(200,200));		//f
-	this.nodes.push(new Node(300,200));		//g
-	this.nodes.push(new Node(150,300));		//h
-}
-
 Graph.prototype.clear = function() {
 	var ctx = this.ctx;
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -112,10 +101,6 @@ Graph.prototype.getRoot = function() {
 	return null;
 }
 
-Graph.prototype.getEdgesLength = function() {
-	return 0;
-}
-
 //Populate nodes children list for future tour
 Graph.prototype.populateChildrenFromParents = function() {
 	for(var i = 0; i < this.nodes.length; i++)
@@ -130,6 +115,7 @@ Graph.prototype.populateChildrenFromParents = function() {
 	}
 }
 
+//Reset graph so it can be re-used
 Graph.prototype.again = function() {
 	for(var i = 0; i < this.nodes.length; i++) {
 		var node = this.nodes[i];
@@ -149,24 +135,4 @@ function Node(x, y) {
 	this.children = [];
 	this.angle = 0;
 	this.tourParent = null;
-}
-
-function getAngle(node1, node2) {
-	var angle = Math.atan2(node2.y - node1.y, node2.x - node1.x) * 180 / Math.PI;
-	while(angle < 0) {
-		angle = 360 + angle;
-	}
-
-	return angle;
-}
-
-function getLength(node1, node2) {
-	var length = 0;
-	var xx = node2.x - node1.x;
-	var yy = node2.y - node1.y;
-	xx = xx * xx;
-	yy = yy * yy;
-	
-	length = Math.sqrt(xx + yy);
-	return length;
 }
